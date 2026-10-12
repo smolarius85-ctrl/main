@@ -1,0 +1,263 @@
+/* ============================================================
+   Shared theme: dark academia, light and dark
+   ------------------------------------------------------------
+   One token set, two palettes. Light is parchment and ink,
+   dark is walnut and candlelight. Every tool and the launcher
+   read from these names and never hardcode a color.
+
+   Dark resolves three ways on purpose:
+     :root                                  light default
+     prefers-color-scheme: dark             system dark, unless
+                                            the page is pinned light
+     :root[data-theme="dark"]               pinned dark
+
+   assets/theme.js drives the pin. Without it the pages still
+   follow the system setting.
+   ============================================================ */
+
+:root {
+  /* Surfaces and text */
+  --bg: #EFE8DA;
+  --surface: #FBF6EC;
+  --surface-2: #F5EFE2;
+  --ink: #231C14;
+  --body: #3C3226;
+  --muted: #6E6253;
+  --rule: #D7CBB4;
+  --rule-soft: #E7DECD;
+  --on-dark: #FBF6EC;
+
+  /* Accents. Oxblood leads, forest supports, brass warns. */
+  --accent: #7B2D26;
+  --accent-ink: #6C2720;
+  --accent-soft: #F3E4E0;
+  --accent-2: #2F5D50;
+  --accent-2-ink: #275045;
+  --accent-2-soft: #E1EAE6;
+  --brass: #87661C;
+  --brass-soft: #F4EAD2;
+
+  /* Status */
+  --ok: #2F6B52;
+  --ok-soft: #E1EBE5;
+  --warn: #87661C;
+  --warn-soft: #F4EAD2;
+  --bad: #8E3326;
+  --bad-soft: #F6E3DE;
+  --idle: #B3A58C;
+  --idle-soft: #E6DFD1;
+
+  /* Type */
+  --font-display: "Libre Baskerville", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+
+  /* Shape */
+  --radius: 4px;
+  --radius-lg: 6px;
+  --shadow: 0 10px 30px rgba(35, 28, 20, .14);
+  --shadow-sm: 0 1px 2px rgba(35, 28, 20, .07);
+
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16120E;
+    --surface: #1F1A14;
+    --surface-2: #262019;
+    --ink: #EFE6D6;
+    --body: #DBD0BD;
+    --muted: #A2927A;
+    --rule: #3A3127;
+    --rule-soft: #2C251D;
+    --on-dark: #16120E;
+
+    --accent: #CC7463;
+    --accent-ink: #E1917F;
+    --accent-soft: #3A211C;
+    --accent-2: #74B49C;
+    --accent-2-ink: #8CC6B0;
+    --accent-2-soft: #19332B;
+    --brass: #D2A94E;
+    --brass-soft: #332813;
+
+    --ok: #74B49C;
+    --ok-soft: #19332B;
+    --warn: #D2A94E;
+    --warn-soft: #332813;
+    --bad: #DD8471;
+    --bad-soft: #3A211C;
+    --idle: #6B5D49;
+    --idle-soft: #2A2419;
+
+    --shadow: 0 10px 30px rgba(0, 0, 0, .55);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #16120E;
+  --surface: #1F1A14;
+  --surface-2: #262019;
+  --ink: #EFE6D6;
+  --body: #DBD0BD;
+  --muted: #A2927A;
+  --rule: #3A3127;
+  --rule-soft: #2C251D;
+  --on-dark: #16120E;
+
+  --accent: #CC7463;
+  --accent-ink: #E1917F;
+  --accent-soft: #3A211C;
+  --accent-2: #74B49C;
+  --accent-2-ink: #8CC6B0;
+  --accent-2-soft: #19332B;
+  --brass: #D2A94E;
+  --brass-soft: #332813;
+
+  --ok: #74B49C;
+  --ok-soft: #19332B;
+  --warn: #D2A94E;
+  --warn-soft: #332813;
+  --bad: #DD8471;
+  --bad-soft: #3A211C;
+  --idle: #6B5D49;
+  --idle-soft: #2A2419;
+
+  --shadow: 0 10px 30px rgba(0, 0, 0, .55);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+}
+
+/* ---------- Base ---------- */
+
+*, *::before, *::after { box-sizing: inherit; }
+
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+a { color: var(--accent-ink); }
+
+/* Tabular figures wherever money or counts land. */
+.num, td.v, .stat .v { font-variant-numeric: tabular-nums; }
+
+/* ---------- Controls ---------- */
+
+.btn,
+button.btn {
+  font: inherit;
+  font-size: 13px;
+  color: var(--body);
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 9px 15px;
+  cursor: pointer;
+}
+
+.btn:hover { border-color: var(--muted); background: var(--surface); }
+
+.btn.primary,
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-dark);
+}
+
+.btn.primary:hover,
+button.primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+
+.btn:disabled, button:disabled { opacity: .5; cursor: default; }
+
+input, textarea, select {
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+::placeholder { color: var(--muted); opacity: .8; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- Surfaces ---------- */
+
+.panel, .card {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+}
+
+/* ---------- Utility ---------- */
+
+.sr, .sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 10px 14px;
+  border: 1px solid var(--rule);
+  z-index: 100;
+}
+
+.skip:focus { left: 8px; top: 8px; }
+
+/* The shared theme button. Small, quiet, same place on every page. */
+.theme-btn {
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.theme-btn:hover { color: var(--ink); border-color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+@media print {
+  :root {
+    --bg: #FFF; --surface: #FFF; --surface-2: #FFF;
+    --ink: #000; --body: #111; --muted: #444;
+    --rule: #999; --rule-soft: #CCC;
+  }
+  body { background: #FFF; }
+  .no-print, .theme-btn, .skip { display: none !important; }
+}
