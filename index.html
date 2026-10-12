@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TKTK Recruiting Tools</title>
+<meta name="description" content="Three browser tools for healthcare recruiting: job list mapping, compact license coverage, and deal margin estimates. Nothing installs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css">
+<link rel="stylesheet" href="assets/launcher.css">
+<script src="assets/theme.js"></script>
+</head>
+<body>
+
+<a class="skip" href="#tools">Skip to the tools</a>
+
+<header class="masthead">
+  <div class="shell">
+    <p class="env">Portfolio build, October 12 2026</p>
+    <h1>TKTK Recruiting<br>Tools</h1>
+    <p class="lede">Three browser tools for healthcare recruiting desks. Each one is a single page that runs in the browser, holds its data on the machine it is opened on, and needs no account and no server.</p>
+
+    <dl class="figures">
+      <div><dt>Tools</dt><dd>3</dd></div>
+      <div><dt>Cities and ZIPs on file</dt><dd>29,788</dd></div>
+      <div><dt>Licensure compacts tracked</dt><dd>3</dd></div>
+      <div><dt>Server required</dt><dd>None</dd></div>
+    </dl>
+  </div>
+</header>
+
+<main class="shell" id="tools">
+  <section aria-label="Tools">
+    <div class="grid">
+
+      <article class="card" data-accent="forest">
+        <p class="kicker">Geography</p>
+        <h2><a class="card-title" href="job-map.html">Job Map</a></h2>
+        <p class="card-body">Paste a job list or upload a CSV and see the whole req load on one map. Drop a candidate pin and the table reports distance to every opening, so a submission conversation starts with a number instead of a guess.</p>
+        <table class="spec">
+          <caption>What it covers</caption>
+          <tbody>
+            <tr><th scope="row">Offline place lookup</th><td>29,788 cities and ZIPs</td></tr>
+            <tr><th scope="row">State and territory groups</th><td>62</td></tr>
+            <tr><th scope="row">Input</th><td>Paste a grid, or CSV with column mapping</td></tr>
+            <tr><th scope="row">Output</th><td>Map, filtered table, CSV, print view</td></tr>
+          </tbody>
+        </table>
+        <ul class="actions">
+          <li><a class="primary" href="job-map.html">Open</a></li>
+        </ul>
+      </article>
+
+      <article class="card" data-accent="oxblood">
+        <p class="kicker">Licensure</p>
+        <h2><a class="card-title" href="compact-license-map.html">Compact License Map</a></h2>
+        <p class="card-body">Where a therapy clinician can work on a compact privilege rather than a new state license. Pick a discipline, read the map, click a state for the rules, the fees, the jurisprudence requirement and the board link.</p>
+        <table class="spec">
+          <caption>What it covers</caption>
+          <tbody>
+            <tr><th scope="row">Disciplines</th><td>PT and PTA, OT and OTA, SLP</td></tr>
+            <tr><th scope="row">Jurisdictions mapped</th><td>51</td></tr>
+            <tr><th scope="row">Accepting privileges now</th><td>PT 38, OT 8, SLP 4</td></tr>
+            <tr><th scope="row">Status verified</th><td>September 20 2026</td></tr>
+          </tbody>
+        </table>
+        <ul class="actions">
+          <li><a class="primary" href="compact-license-map.html">Open</a></li>
+        </ul>
+      </article>
+
+      <article class="card" data-accent="brass">
+        <p class="kicker">Margin</p>
+        <h2><a class="card-title" href="deal-sheet.html">Deal Sheet</a></h2>
+        <p class="card-body">A pre-call estimate for a travel assignment. Enter the bill rate and the pay package and it returns gross margin, the stipend split against the GSA daily figures, and an estimate of candidate take-home. Flags the lines that usually go wrong before a recruiter quotes them.</p>
+        <table class="spec">
+          <caption>What it covers</caption>
+          <tbody>
+            <tr><th scope="row">Inputs</th><td>43 fields across 6 sections</td></tr>
+            <tr><th scope="row">Autofill</th><td>Paste a Salesforce job record</td></tr>
+            <tr><th scope="row">Export</th><td>Two-tab spreadsheet, cell mapped</td></tr>
+            <tr><th scope="row">Candidate view</th><td>Same figures, no margin on it</td></tr>
+          </tbody>
+        </table>
+        <ul class="actions">
+          <li><a class="primary" href="deal-sheet.html">Open</a></li>
+        </ul>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="how">
+    <h2 id="how">Before you open one</h2>
+    <p>All three open ready to use. Nothing installs, nothing asks for an account, and no figure you type is sent anywhere: the deal sheet keeps its history in the browser it was entered in, and the job map keeps the current map the same way. The map draws tiles from Esri and falls back to Nominatim for an address its own table does not recognize. Everything else runs in the page.</p>
+    <ul class="sources">
+      <li>
+        <a href="https://ptcompact.org/compact-map/">PT Compact Commission</a>
+        <span>Member, enacted and introduced states for the Physical Therapy Compact, with the states currently issuing privileges.</span>
+      </li>
+      <li>
+        <a href="https://otcompact.gov/before-you-apply/">OT Compact Commission</a>
+        <span>Member states for the Occupational Therapy Compact and the Before You Apply table of states accepting applications.</span>
+      </li>
+      <li>
+        <a href="https://aslpcompact.com/compact-map/">ASLP Interstate Compact</a>
+        <span>Enacted states for audiology and speech-language pathology, and which of them issue privileges today.</span>
+      </li>
+    </ul>
+  </section>
+
+  <section class="panel" aria-labelledby="status">
+    <h2 id="status">Status</h2>
+    <p>These are working tools built for a recruiting desk, not a released product. Compact status moves on legislative calendars: the date on the license map is when each list was last checked against the commission sites, and the tool says so on screen when that date is getting old. The deal sheet is a pre-call estimate and is not payroll.</p>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="shell">
+    <div class="footer-bar">
+      <p style="margin:0">Built by Spencer Rogers. Tools and documentation copyright 2026.</p>
+      <button class="theme-btn" type="button" data-theme-toggle>Theme: auto</button>
+    </div>
+    <p>Compact status published by the Physical Therapy Compact Commission, the Occupational Therapy Compact Commission, and the Audiology and Speech-Language Pathology Interstate Compact. Mapping by Leaflet, tiles by Esri, address lookup by Nominatim and OpenStreetMap contributors.</p>
+  </div>
+</footer>
+
+</body>
+</html>
