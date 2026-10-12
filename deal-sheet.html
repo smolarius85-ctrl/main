@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deal Sheet</title>
+<meta name="description" content="Pre-call margin estimate for a travel assignment: bill rate, pay package, stipend split, and candidate take-home.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css">
+<script src="assets/theme.js"></script>
+<style>
+  /* ---------- Local aliases onto the shared tokens ----------
+     The rules below were written against these names, so they
+     point at the shared tokens and inherit light and dark. */
+  :root {
+    --paper: var(--bg);
+    --panel: var(--surface);
+    --field: var(--surface-2);
+    --ruleSoft: var(--rule-soft);
+    --good: var(--accent-2);
+    --goodSoft: var(--accent-2-soft);
+    --red: var(--bad);
+    --redSoft: var(--bad-soft);
+    --gold: var(--brass);
+    --goldSoft: var(--brass-soft);
+  }
+
+  body { padding: 24px 24px 72px; }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  h1 { margin: 0; font-size: clamp(26px, 4vw, 33px); }
+  header.top { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; padding-bottom: 18px; border-bottom: 1px solid var(--rule); }
+  .sub { font-size: 12.5px; color: var(--muted); margin-top: 6px; max-width: 64ch; }
+  .nav { display: flex; gap: 7px; }
+  .nav button {
+    padding: 8px 15px; font: inherit; font-size: 13px; cursor: pointer; border-radius: var(--radius);
+    border: 1px solid var(--rule); background: transparent; color: var(--body);
+  }
+  .nav button:hover { border-color: var(--muted); color: var(--ink); }
+  .nav button.on { border-color: var(--accent-2); background: var(--accent-2); color: var(--on-dark); }
+  .crumb { margin: 0 0 18px; font-size: 12.5px; }
+  .crumb a { color: var(--muted); text-decoration: none; }
+  .crumb a:hover { color: var(--ink); }
+  .grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 26px; align-items: start; margin-top: 24px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  section.blk { margin-bottom: 28px; }
+  section.blk h3 { margin: 0; font-size: 17px; }
+  .blkhead { border-bottom: 1px solid var(--rule); padding-bottom: 7px; margin-bottom: 16px; }
+  .blknote { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+  .fld { margin-bottom: 14px; }
+  .fld.wide { grid-column: 1/-1; }
+  .lbl { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .lbl span, .lbl label { font-size: 13px; color: var(--body); line-height: 1.3; }
+  .lbl em { font-size: 11px; color: var(--muted); font-style: normal; }
+  input, textarea {
+    width: 100%; margin-top: 5px; padding: 8px 10px; font-size: 14px;
+    font-variant-numeric: tabular-nums; font-family: inherit;
+  }
+  input.flag, textarea.flag { background: var(--brass-soft); border-color: var(--brass); }
+  .tog { display: flex; gap: 6px; margin-top: 5px; }
+  .tog button {
+    flex: 1; padding: 8px 6px; font: inherit; font-size: 13px; cursor: pointer; border-radius: var(--radius);
+    border: 1px solid var(--rule); background: var(--surface-2); color: var(--muted);
+  }
+  .tog button.on { border-color: var(--accent-2); background: var(--accent-2-soft); color: var(--accent-2-ink); }
+  .btn.primary { border-color: var(--accent); background: var(--accent); color: var(--on-dark); }
+  .btn.primary:hover { opacity: .9; }
+  .row { display: flex; gap: 9px; flex-wrap: wrap; }
+  .status {
+    display: flex; justify-content: space-between; gap: 12px; align-items: flex-start;
+    padding: 11px 14px; margin-bottom: 16px; border-radius: var(--radius); font-size: 13px; line-height: 1.45;
+  }
+  .status.ok { background: var(--accent-2-soft); border-left: 3px solid var(--accent-2); color: var(--accent-2-ink); }
+  .status.warn { background: var(--brass-soft); border-left: 3px solid var(--brass); color: var(--ink); }
+  .status button { border: none; background: transparent; cursor: pointer; font-size: 15px; color: inherit; padding: 0; }
+  .stat .k { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .stat .v { font-family: var(--font-display); line-height: 1.15; font-variant-numeric: tabular-nums; margin-top: 4px; color: var(--ink); }
+  .stat .s { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 7px 0; }
+  td.k { color: var(--muted); font-size: 12.5px; }
+  td.v { text-align: right; font-variant-numeric: tabular-nums; font-size: 12.5px; color: var(--ink); }
+  tr.line { border-bottom: 1px solid var(--rule-soft); }
+  .box { background: var(--surface-2); border: 1px solid var(--rule); border-radius: var(--radius); padding: 15px; margin-bottom: 16px; }
+  input[type=range] { accent-color: var(--accent-2); padding: 0; background: none; border: none; }
+  .foot { font-size: 11.5px; color: var(--muted); line-height: 1.55; margin-top: 14px; padding: 0 4px; }
+  .cand { max-width: 620px; margin: 0 auto; }
+  .cand .card { padding: 32px 34px; }
+  .cand h2 { margin: 0; font-size: 24px; }
+  .hist { padding: 24px; }
+  .histrow {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 13px 0; border-bottom: 1px solid var(--rule-soft);
+  }
+  .hide { display: none; }
+</style>
+</head>
+</head>
+<body>
+<div class="wrap">
+  <p class="crumb"><a href="index.html">&larr; All tools</a></p>
+  <header class="top">
+    <div>
+      <h1>Deal sheet</h1>
+      <div class="sub">Pre-call estimate. Run the workbook before anything goes to Payroll or Compliance.<span id="selftest"></span></div>
+    </div>
+    <div class="nav">
+      <button id="navDeal" class="on">Deal</button>
+      <button id="navCand">Candidate view</button>
+      <button id="navHist">History</button>
+      <button class="theme-btn" type="button" data-theme-toggle>Theme: auto</button>
+    </div>
+  </header>
+
+  <div id="status" class="hide"></div>
+
+  <div id="viewDeal">
+    <div class="grid">
+      <div class="panel" style="padding:22px 24px">
+
+        <div style="border:1px solid var(--rule);border-radius:3px;margin-bottom:24px;background:var(--field)">
+          <button id="impToggle" style="width:100%;text-align:left;padding:11px 14px;font-size:13.5px;
+            background:transparent;border:none;cursor:pointer;color:var(--ink);font-family:inherit">
+            Paste the Salesforce job record</button>
+          <div id="impBody" style="padding:0 14px 14px">
+            <textarea id="raw" rows="6" placeholder="Select the job record on screen, copy, paste here."></textarea>
+            <div class="row" style="margin-top:8px;align-items:center">
+              <button id="parseBtn" class="btn primary">Fill the fields</button>
+              <span style="font-size:11.5px;color:var(--muted)">Pattern matching, not perfect. Confirm the bill rate, city, and facility yourself.</span>
+            </div>
+            <div id="parseOut" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+          </div>
+        </div>
+
+        <div id="formHost"></div>
+
+        <div class="row">
+          <button id="dlBtn" class="btn primary">Download deal sheet</button>
+          <button id="saveBtn" class="btn">Save to History</button>
+          <button id="copyBtn" class="btn">Copy figures</button>
+          <button id="clearBtn" class="btn">Clear</button>
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.45">
+          The download is a two tab spreadsheet. Tab one lists every input and output next to the
+          workbook cell it maps to. Tab two is the candidate summary with no margin on it.
+        </div>
+      </div>
+
+      <div>
+        <div class="panel" style="padding:22px 22px 18px" id="snapshot"></div>
+        <div class="foot">
+          Burden 18%, assumed contractor tax 21% with a stipend and 35% without, insurance $250/mo.
+          Take-home is an estimate, not a paycheck. Tax home eligibility runs through the
+          representation form, never a verbal answer.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="viewCand" class="hide cand"></div>
+  <div id="viewHist" class="hide panel hist"></div>
+  <textarea id="buffer" readonly style="position:absolute;left:-9999px;top:0;height:1px;width:1px"></textarea>
+</div>
+
+<script>
+/* =====================================================================
+   Deal sheet, offline build
+   Formulas checked cell-by-cell against Deal_Calculator_Worksheet.xlsx
+   (Deal Calculator / Profitability details / Settings sheets).
+
+   Guaranteed hours is intentionally excluded from every GM/margin
+   calculation below, matching the source workbook, where it only
+   feeds contract/confirmation document text (the guarantee clause).
+   It IS used for one candidate-facing figure this tool adds beyond
+   the workbook: weekly gross/take-home at guaranteed hours, shown
+   next to the same figures at the regular schedule, so a recruiter
+   can quote both numbers to a candidate in one breath.
+
+   The margin meter uses the workbook's own targets (Settings B11/B12:
+   15% GM and $10/hr GM, both green/red, yellow when both are met).
+   There is no multi-tier accelerator schedule in the source workbook.
+   ===================================================================== */
+
+var SETTINGS = {
+  taxableBurden: 0.18,
+  bonusBurden: 0.18,
+  contractorTaxRate: 0.21,
+  fullyTaxedRate: 0.35,
+  otMultiplier: 1.5,
+  holidayMultiplier: 1.5,
+  monthlyInsurance: 250,
+  defaultCEU: 97,
+  defaultCompliance: 300,
+  minGMPct: 0.15,
+  minGMHr: 10
+};
+
+var BLANK = {
+  candidateFirst:"", candidateLast:"", preferredName:"", discipline:"", recruiter:"Shannon Molarius",
+  facility:"", city:"", state:"", zip:"",
+  startDate:"", endDate:"", weeks:"13", daysPerWeek:"5", hoursPerDay:"8", guaranteedHours:"40",
+  rtoDays:"", notes:"",
+  billRate:"", feePct:"", otBillRate:"", holidayBillRate:"",
+  taxable:"", gsaLodging:"", gsaMIE:"", stipendOverride:"", otPayOverride:"", holidayPayOverride:"",
+  insurance:"No", travelReimb:"", compliance:"300", licenseReimb:"", ceu:"97", bonus:"",
+  otherBonus1:"", otherBonus2:"", otherBonus3:"",
+  otherReimb1:"", otherReimb2:"", otherReimb3:"",
+  miles:"", ratePerMile:"", mileageBillable:"No", billPerMile:"",
+  oriBillable:"No", oriBillRate:"", oriPayRate:"", oriHours:""
+};
+
+/* ---------------------------- helpers ---------------------------- */
+function num(v, d){
+  if(d===undefined) d = 0;
+  if(v===""||v===null||v===undefined) return d;
+  var n = parseFloat(String(v).replace(/[^0-9.\-]/g,""));
+  return isNaN(n) ? d : n;
+}
+function has(v){ return v!==""&&v!==null&&v!==undefined; }
+function money0(n){ return !isFinite(n) ? "—" : "$"+Math.round(n).toLocaleString("en-US"); }
+function money2(n){ return !isFinite(n) ? "—" : "$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function pct1(n){ return !isFinite(n) ? "—" : (n*100).toFixed(1)+"%"; }
+/* Escapes for both HTML text nodes and single-quoted HTML attributes.
+   Apostrophes must be escaped too: unescaped, a name like "O'Brien"
+   closes a value='...' attribute early and lets whatever follows the
+   quote be parsed as new attributes (a real, easily-triggered bug). */
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+
+/* Matches the workbook's own targets: Settings!B11 (Min GM %) and
+   Settings!B12 (Min GM $/hr), applied to gross GM (Profitability!B11
+   and B5), the same cells the workbook itself flags green/red on.
+   There is no multi-band accelerator schedule in the source workbook;
+   an earlier version of this tool invented one and it has been
+   removed so the meter can't be read as implying a payout structure
+   that doesn't exist. */
+function marginFlag(gmPct, gmHr){
+  var pctOk = isFinite(gmPct) && gmPct >= SETTINGS.minGMPct;
+  var hrOk = isFinite(gmHr) && gmHr >= SETTINGS.minGMHr;
+  return {pctOk:pctOk, hrOk:hrOk, strong: pctOk && hrOk};
+}
+
+/* Flags data-entry mistakes that would otherwise produce a margin
+   number that still looks plausible instead of obviously broken. */
+function computeWarnings(c, f){
+  var w = [];
+  if(!c.live) return w;
+  var rawFee = num(f.feePct);
+  if(rawFee > 0 && rawFee < 1) w.push("Fee % looks like a decimal fraction. Enter 6 for 6%, not 0.06.");
+  if(c.taxable > 0 && c.taxable >= c.billRate) w.push("Taxable pay rate is at or above the bill rate. Confirm both numbers.");
+  if(c.billRate > 0 && c.billRate < 10) w.push("Bill rate is under $10/hr. Confirm this isn't missing a digit.");
+  if(c.billRate > 500) w.push("Bill rate is over $500/hr. Confirm this isn't a decimal error.");
+  return w;
+}
+
+/* ----------------------------- engine ---------------------------- */
+function calc(f){
+  var billRate = num(f.billRate);
+  var live = has(f.billRate) && billRate > 0;
+
+  var daysPerWeek = num(f.daysPerWeek,5);
+  var hoursPerDay = num(f.hoursPerDay,8);
+  var hoursPerWeek = daysPerWeek * hoursPerDay;
+  var weeks = Math.max(1, num(f.weeks,13));
+  var totalHours = weeks * hoursPerWeek;
+
+  var feePct = num(f.feePct)/100;
+  var taxable = num(f.taxable);
+
+  var gsaDaily = num(f.gsaLodging) + num(f.gsaMIE);
+  var gsaMaxHr = hoursPerWeek > 0 ? (gsaDaily*7)/hoursPerWeek : 0;
+  var stipendHr = has(f.stipendOverride) ? num(f.stipendOverride) : gsaMaxHr;
+  var overGSA = stipendHr > gsaMaxHr + 0.001;
+
+  /* Profitability details B5, B11, B9, B12 */
+  var gmHr = billRate*(1-feePct) - taxable*(1+SETTINGS.taxableBurden) - stipendHr;
+  var gmPct = billRate > 0 ? gmHr/billRate : NaN;
+  var weeklyGM = gmHr * hoursPerWeek;
+  var totalGM = gmHr * totalHours;
+
+  /* B15, B16, B17, B18 */
+  var revenueDay = daysPerWeek > 0 ? billRate*hoursPerWeek/daysPerWeek : NaN;
+  var revenueWeek = billRate * hoursPerWeek;
+  var revenueTotal = billRate * totalHours;
+  var netRevenueAfterFee = revenueTotal*(1-feePct);
+
+  /* B26, B27, B28, B29 */
+  var grossHr = taxable + stipendHr;
+  var weeklyGross = grossHr * hoursPerWeek;
+  var taxRate = stipendHr === 0 ? SETTINGS.fullyTaxedRate : SETTINGS.contractorTaxRate;
+  var weeklyTakeHome = (taxable*(1-taxRate) + stipendHr) * hoursPerWeek;
+
+  /* Candidate-facing only: pay at the regular schedule vs. pay at the
+     guaranteed-hours number, so the two can be quoted side by side.
+     Guaranteed hours still plays no part in GM/margin above, matching
+     the source workbook (it only feeds contract text there). */
+  var guaranteedHours = has(f.guaranteedHours) ? num(f.guaranteedHours) : hoursPerWeek;
+  var weeklyGrossAtGuarantee = grossHr * guaranteedHours;
+  var weeklyTakeHomeAtGuarantee = (taxable*(1-taxRate) + stipendHr) * guaranteedHours;
+
+  var otPayHr = has(f.otPayOverride) ? num(f.otPayOverride)
+              : SETTINGS.otMultiplier*(taxable + stipendHr);
+  var holidayPayHr = has(f.holidayPayOverride) ? num(f.holidayPayOverride)
+                    : SETTINGS.holidayMultiplier*(taxable + stipendHr);
+
+  /* Profitability B6, B7: OT/holiday GM per hour. Blank (not a rate
+     that applies) until the matching bill rate is entered, same as
+     the workbook. Not folded into totalGM/netMargin below: the
+     workbook itself has no OT/holiday HOURS input anywhere, so these
+     stay per-hour reference figures, exactly as the workbook treats them. */
+  var otBillRate = num(f.otBillRate);
+  var otGmHr = has(f.otBillRate) ? otBillRate*(1-feePct) - otPayHr : NaN;
+  var holidayBillRate = num(f.holidayBillRate);
+  var holidayGmHr = has(f.holidayBillRate) ? holidayBillRate*(1-feePct) - holidayPayHr : NaN;
+
+  /* B33 to B41 */
+  var insurance = f.insurance === "Yes" ? (SETTINGS.monthlyInsurance*12/52)*weeks : 0;
+  var bonusBurdened = num(f.bonus)*(1+SETTINGS.bonusBurden);
+  var otherBonuses = (num(f.otherBonus1)+num(f.otherBonus2)+num(f.otherBonus3))*(1+SETTINGS.bonusBurden);
+  var otherReimb = num(f.otherReimb1)+num(f.otherReimb2)+num(f.otherReimb3);
+  var totalCosts = insurance + num(f.travelReimb) + num(f.compliance,SETTINGS.defaultCompliance)
+    + num(f.licenseReimb) + num(f.ceu,SETTINGS.defaultCEU) + bonusBurdened + otherBonuses + otherReimb;
+  var costPerHour = totalHours > 0 ? totalCosts/totalHours : NaN;
+
+  /* B8 mileage */
+  var miles = num(f.miles);
+  var mileageGM = (f.mileageBillable==="Yes" ? miles*num(f.billPerMile) : 0) - miles*num(f.ratePerMile);
+
+  /* B58 to B61 orientation */
+  var oriHours = num(f.oriHours);
+  var oriRevenue = f.oriBillable==="Yes" ? num(f.oriBillRate)*oriHours : 0;
+  var oriCost = num(f.oriPayRate)*(1+SETTINGS.taxableBurden)*oriHours;
+  var oriGM = oriHours > 0 ? oriRevenue - oriCost : 0;
+  var oriGmPct = (oriHours > 0 && oriRevenue !== 0) ? oriGM/oriRevenue : NaN;
+
+  /* B45 to B48 */
+  var netMargin = totalGM - totalCosts + mileageGM + oriGM;
+  var netWeekly = weeks > 0 ? netMargin/weeks : NaN;
+  var netGMPct = (revenueTotal + oriRevenue) > 0 ? netMargin/(revenueTotal + oriRevenue) : NaN;
+
+  /* B50 to B55 RTO */
+  var rtoHours = num(f.rtoDays)*hoursPerDay;
+  var workedHours = Math.max(0, totalHours - rtoHours);
+  var rtoRevenue = billRate * workedHours;
+  var rtoGM = gmHr * workedHours;
+  var adjAvgWeeklyRevenue = weeks > 0 ? rtoRevenue/weeks : NaN;
+  var adjAvgWeeklyGM = weeks > 0 ? rtoGM/weeks : NaN;
+
+  function roomAt(target, mode){
+    if(!live || hoursPerWeek <= 0) return NaN;
+    var neededGmHr;
+    if(mode === "net"){
+      var needed = target*(revenueTotal + oriRevenue) + totalCosts - mileageGM - oriGM;
+      neededGmHr = totalHours > 0 ? needed/totalHours : NaN;
+    } else {
+      neededGmHr = target*billRate;
+    }
+    var maxTaxable = (billRate*(1-feePct) - stipendHr - neededGmHr)/(1+SETTINGS.taxableBurden);
+    if(!isFinite(maxTaxable)) return NaN;
+    return (Math.max(0,maxTaxable) + stipendHr)*hoursPerWeek;
+  }
+
+  return {live:live, billRate:billRate, feePct:feePct, taxable:taxable, weeks:weeks,
+    daysPerWeek:daysPerWeek, hoursPerDay:hoursPerDay, hoursPerWeek:hoursPerWeek, totalHours:totalHours,
+    gsaDaily:gsaDaily, gsaMaxHr:gsaMaxHr, stipendHr:stipendHr, overGSA:overGSA,
+    gmHr:gmHr, gmPct:gmPct, weeklyGM:weeklyGM, totalGM:totalGM,
+    otPayHr:otPayHr, holidayPayHr:holidayPayHr, otBillRate:otBillRate, otGmHr:otGmHr,
+    holidayBillRate:holidayBillRate, holidayGmHr:holidayGmHr,
+    revenueDay:revenueDay, revenueWeek:revenueWeek, revenueTotal:revenueTotal, netRevenueAfterFee:netRevenueAfterFee,
+    grossHr:grossHr, weeklyGross:weeklyGross, weeklyTakeHome:weeklyTakeHome, taxRate:taxRate,
+    guaranteedHours:guaranteedHours, weeklyGrossAtGuarantee:weeklyGrossAtGuarantee, weeklyTakeHomeAtGuarantee:weeklyTakeHomeAtGuarantee,
+    insurance:insurance, totalCosts:totalCosts, costPerHour:costPerHour, mileageGM:mileageGM,
+    oriRevenue:oriRevenue, oriCost:oriCost, oriGM:oriGM, oriGmPct:oriGmPct,
+    netMargin:netMargin, netWeekly:netWeekly, netGMPct:netGMPct,
+    rtoHours:rtoHours, workedHours:workedHours, rtoRevenue:rtoRevenue, rtoGM:rtoGM,
+    adjAvgWeeklyRevenue:adjAvgWeeklyRevenue, adjAvgWeeklyGM:adjAvgWeeklyGM,
+    roomAt:roomAt};
+}
+
+/* ------------------------- export rows --------------------------- */
+function buildRows(f){
+  var c = calc(f);
+  var name = ((f.candidateFirst||"")+" "+(f.candidateLast||"")).trim();
+  function n(v){ return isFinite(v) ? Number(v.toFixed(4)) : ""; }
+  function g(label, cell, value){ return [label, cell, value]; }
+  return [
+    ["Field","Workbook cell","Value"],
+    ["INPUTS","",""],
+    g("Candidate","Deal Calculator B5", name),
+    g("Preferred name","B9", f.preferredName),
+    g("Discipline","B6", f.discipline),
+    g("Recruiter","B7", f.recruiter),
+    g("Facility","B8", f.facility),
+    g("Facility city","B16", f.city),
+    g("Facility state","B17", f.state),
+    g("Facility zip","B18", f.zip),
+    g("Start date","B10", f.startDate),
+    g("End date","B11", f.endDate),
+    g("Guaranteed hours","B19", num(f.guaranteedHours)),
+    g("RTO days","B23", num(f.rtoDays)),
+    g("Weeks","B29", c.weeks),
+    g("Days per week","B30", c.daysPerWeek),
+    g("Hours per week","B31", c.hoursPerWeek),
+    g("Hours per day","B32", c.hoursPerDay),
+    g("Bill rate $/hr","B35", n(c.billRate)),
+    g("Client fee %","B36", n(c.feePct)),
+    g("OT bill rate $/hr","B37", num(f.otBillRate)),
+    g("Holiday bill rate $/hr","B38", num(f.holidayBillRate)),
+    g("Taxable rate $/hr","B41", n(c.taxable)),
+    g("GSA daily lodging $","B42", num(f.gsaLodging)),
+    g("GSA daily M&IE $","B43", num(f.gsaMIE)),
+    g("Stipend override $/hr","B45", has(f.stipendOverride) ? num(f.stipendOverride) : "(blank = GSA max)"),
+    g("OT pay override $/hr","B46", has(f.otPayOverride) ? num(f.otPayOverride) : "(blank = 1.5× default)"),
+    g("Holiday pay override $/hr","B47", has(f.holidayPayOverride) ? num(f.holidayPayOverride) : "(blank = 1.5× default)"),
+    g("Insurance opt-in","B50", f.insurance),
+    g("Travel reimbursement $","B51", num(f.travelReimb)),
+    g("Compliance $","B52", num(f.compliance)),
+    g("License reimbursement $","B53", num(f.licenseReimb)),
+    g("CEU $","B54", num(f.ceu)),
+    g("Bonus $","B55", num(f.bonus)),
+    g("Other bonus 1 $","B58", num(f.otherBonus1)),
+    g("Other bonus 2 $","B59", num(f.otherBonus2)),
+    g("Other bonus 3 $","B60", num(f.otherBonus3)),
+    g("Other reimb 1 $","B63", num(f.otherReimb1)),
+    g("Other reimb 2 $","B64", num(f.otherReimb2)),
+    g("Other reimb 3 $","B65", num(f.otherReimb3)),
+    g("Miles","B68", num(f.miles)),
+    g("Rate per mile $","B69", num(f.ratePerMile)),
+    g("Mileage billable","B70", f.mileageBillable),
+    g("Bill per mile $","B71", num(f.billPerMile)),
+    g("Orientation billable","B74", f.oriBillable),
+    g("Orientation bill rate $/hr","B75", num(f.oriBillRate)),
+    g("Orientation pay rate $/hr","B76", num(f.oriPayRate)),
+    g("Orientation hours","B77", num(f.oriHours)),
+    g("Notes","(not mapped)", f.notes),
+    ["","",""],
+    ["OUTPUTS","",""],
+    g("Tax-free per diem $/hr","Deal Calculator B44", n(c.stipendHr)),
+    g("Regular GM $/hr","Profitability B5", n(c.gmHr)),
+    g("OT GM $/hr","Profitability B6", isFinite(c.otGmHr) ? n(c.otGmHr) : ""),
+    g("Holiday GM $/hr","Profitability B7", isFinite(c.holidayGmHr) ? n(c.holidayGmHr) : ""),
+    g("Mileage GM $ (assignment)","Profitability B8", n(c.mileageGM)),
+    g("Weekly GM $ (no OT)","Profitability B9", n(c.weeklyGM)),
+    g("Gross margin %","Profitability B11", n(c.gmPct)),
+    g("Total deal GM $ (no OT)","Profitability B12", n(c.totalGM)),
+    g("Revenue per day $","Profitability B15", n(c.revenueDay)),
+    g("Revenue per week $","Profitability B16", n(c.revenueWeek)),
+    g("Revenue per assignment $","Profitability B17", n(c.revenueTotal)),
+    g("Net revenue after client fee $","Profitability B18", n(c.netRevenueAfterFee)),
+    g("Gross pay $/hr","Profitability B26", n(c.grossHr)),
+    g("Projected gross weekly $ (regular schedule)","Profitability B27", n(c.weeklyGross)),
+    g("Projected take-home weekly $ (regular schedule)","Profitability B28", n(c.weeklyTakeHome)),
+    g("Projected gross weekly $ (guaranteed hours)","(not mapped)", n(c.weeklyGrossAtGuarantee)),
+    g("Projected take-home weekly $ (guaranteed hours)","(not mapped)", n(c.weeklyTakeHomeAtGuarantee)),
+    g("OT pay rate $/hr","Profitability B29", n(c.otPayHr)),
+    g("Holiday pay used $/hr","Profitability B30", n(c.holidayPayHr)),
+    g("Insurance cost $","Profitability B33", n(c.insurance)),
+    g("Total costs $","Profitability B41", n(c.totalCosts)),
+    g("Cost per hour $","Profitability B42", isFinite(c.costPerHour) ? n(c.costPerHour) : ""),
+    g("Net assignment margin $","Profitability B45", n(c.netMargin)),
+    g("Net weekly margin $","Profitability B46", n(c.netWeekly)),
+    g("Net GM %","Profitability B48", n(c.netGMPct)),
+    g("Scheduled RTO hours","Profitability B50", n(c.rtoHours)),
+    g("Worked hours after RTO","Profitability B51", n(c.workedHours)),
+    g("Adj. total revenue $","Profitability B52", n(c.rtoRevenue)),
+    g("Adj. total GM $","Profitability B53", n(c.rtoGM)),
+    g("Adj. avg weekly revenue $","Profitability B54", isFinite(c.adjAvgWeeklyRevenue) ? n(c.adjAvgWeeklyRevenue) : ""),
+    g("Adj. avg weekly GM $","Profitability B55", isFinite(c.adjAvgWeeklyGM) ? n(c.adjAvgWeeklyGM) : ""),
+    g("Orientation revenue $","Profitability B58", n(c.oriRevenue)),
+    g("Orientation cost $","Profitability B59", n(c.oriCost)),
+    g("Orientation GM $","Profitability B60", n(c.oriGM)),
+    g("Orientation GM %","Profitability B61", isFinite(c.oriGmPct) ? n(c.oriGmPct) : "N/A"),
+    ["","",""],
+    ["ASSUMPTIONS USED","",""],
+    g("Taxable burden","Settings B2", SETTINGS.taxableBurden),
+    g("Bonus burden","Settings B3", SETTINGS.bonusBurden),
+    g("Contractor tax rate","Settings B4", c.taxRate),
+    g("Min GM % target","Settings B11", SETTINGS.minGMPct),
+    g("Min GM $/hr target","Settings B12", SETTINGS.minGMHr),
+    g("Monthly insurance $","Settings B8", SETTINGS.monthlyInsurance),
+    g("Generated","", new Date().toLocaleString())
+  ];
+}
+
+function candidateRows(f){
+  var c = calc(f);
+  var display = f.preferredName || f.candidateFirst || "Candidate";
+  var place = [f.facility, f.city, f.state].filter(function(x){return x;}).join(", ");
+  return [
+    ["Estimated pay package",""],
+    ["Candidate", display],
+    ["Discipline", f.discipline],
+    ["Facility", place],
+    ["Start date", f.startDate],
+    ["Assignment length", c.weeks+" weeks"],
+    ["Weekly hours", c.hoursPerWeek],
+    ["Guaranteed hours", f.guaranteedHours],
+    ["",""],
+    ["Taxable hourly rate", Number(c.taxable.toFixed(2))],
+    ["Tax-free per diem hourly", Number(c.stipendHr.toFixed(2))],
+    ["Estimated weekly gross at regular schedule", Math.round(c.weeklyGross)],
+    ["Estimated weekly take-home at regular schedule", Math.round(c.weeklyTakeHome)],
+    ["Estimated weekly gross at guaranteed hours", Math.round(c.weeklyGrossAtGuarantee)],
+    ["Estimated weekly take-home at guaranteed hours", Math.round(c.weeklyTakeHomeAtGuarantee)],
+    ["",""],
+    ["Figures are estimates and may change based on final schedule, taxes, tax home verification, and assignment terms.",""]
+  ];
+}
+
+/* --------------------- minimal xlsx writer ----------------------- */
+var CRC_TABLE = (function(){
+  var t = new Uint32Array(256), c, n, k;
+  for(n=0;n<256;n++){ c = n; for(k=0;k<8;k++){ c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); } t[n] = c >>> 0; }
+  return t;
+})();
+function crc32(bytes){
+  var c = 0xFFFFFFFF;
+  for(var i=0;i<bytes.length;i++){ c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8); }
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function utf8(s){
+  if(typeof TextEncoder !== "undefined") return new TextEncoder().encode(s);
+  var out = [], i, cp;
+  for(i=0;i<s.length;i++){
+    cp = s.charCodeAt(i);
+    if(cp<128) out.push(cp);
+    else if(cp<2048){ out.push(192|(cp>>6),128|(cp&63)); }
+    else { out.push(224|(cp>>12),128|((cp>>6)&63),128|(cp&63)); }
+  }
+  return new Uint8Array(out);
+}
+function colName(i){
+  var s = "", n = i + 1, m;
+  while(n > 0){ m = (n-1)%26; s = String.fromCharCode(65+m) + s; n = (n-m-1)/26; }
+  return s;
+}
+function sheetXml(rows){
+  var out = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    + '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+  for(var i=0;i<rows.length;i++){
+    out += '<row r="'+(i+1)+'">';
+    for(var j=0;j<rows[i].length;j++){
+      var v = rows[i][j];
+      if(v===null||v===undefined||v==="") continue;
+      var ref = colName(j)+(i+1);
+      if(typeof v === "number" && isFinite(v)){
+        out += '<c r="'+ref+'"><v>'+v+'</v></c>';
+      } else {
+        out += '<c r="'+ref+'" t="inlineStr"><is><t xml:space="preserve">'+esc(v)+'</t></is></c>';
+      }
+    }
+    out += '</row>';
+  }
+  return out + '</sheetData></worksheet>';
+}
+function zipStore(files){
+  /* files: [{name, bytes}] stored uncompressed */
+  var locals = [], central = [], offset = 0, i;
+  function u16(v){ return [v & 255, (v>>>8) & 255]; }
+  function u32(v){ return [v & 255, (v>>>8) & 255, (v>>>16) & 255, (v>>>24) & 255]; }
+  for(i=0;i<files.length;i++){
+    var nameBytes = utf8(files[i].name);
+    var data = files[i].bytes;
+    var crc = crc32(data);
+    var head = [].concat(u32(0x04034b50), u16(20), u16(0), u16(0), u16(0), u16(0),
+      u32(crc), u32(data.length), u32(data.length), u16(nameBytes.length), u16(0));
+    locals.push({head:new Uint8Array(head), name:nameBytes, data:data});
+    var cen = [].concat(u32(0x02014b50), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0),
+      u32(crc), u32(data.length), u32(data.length), u16(nameBytes.length),
+      u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset));
+    central.push({head:new Uint8Array(cen), name:nameBytes});
+    offset += head.length + nameBytes.length + data.length;
+  }
+  var cenSize = 0;
+  for(i=0;i<central.length;i++){ cenSize += central[i].head.length + central[i].name.length; }
+  var eocd = new Uint8Array([].concat(u32(0x06054b50), u16(0), u16(0),
+    u16(files.length), u16(files.length), u32(cenSize), u32(offset), u16(0)));
+  var total = offset + cenSize + eocd.length;
+  var out = new Uint8Array(total), p = 0;
+  function push(arr){ out.set(arr, p); p += arr.length; }
+  for(i=0;i<locals.length;i++){ push(locals[i].head); push(locals[i].name); push(locals[i].data); }
+  for(i=0;i<central.length;i++){ push(central[i].head); push(central[i].name); }
+  push(eocd);
+  return out;
+}
+/* Reads back a zip built by zipStore() above and checks the central
+   directory and every local entry against it (name count, offsets,
+   CRC32 of the stored bytes). Used only by the self-test so a future
+   change to the hand-rolled writer that silently corrupts the file
+   gets caught here instead of when someone opens it in Excel. */
+function verifyZip(bytes){
+  var errors = [];
+  function u16at(o){ return bytes[o] | (bytes[o+1]<<8); }
+  function u32at(o){ return (bytes[o] | (bytes[o+1]<<8) | (bytes[o+2]<<16) | (bytes[o+3]<<24)) >>> 0; }
+  var eocd = -1;
+  for(var i=bytes.length-22;i>=0;i--){
+    if(u32at(i) === 0x06054b50){ eocd = i; break; }
+  }
+  if(eocd < 0){ errors.push("no end-of-central-directory record found"); return errors; }
+  var count = u16at(eocd+10);
+  var cdOffset = u32at(eocd+16);
+  var p = cdOffset, seen = 0;
+  while(seen < count && p < bytes.length){
+    if(u32at(p) !== 0x02014b50){ errors.push("bad central directory signature at byte "+p); break; }
+    var crc = u32at(p+16), compSize = u32at(p+20), nameLen = u16at(p+28),
+        extraLen = u16at(p+30), commentLen = u16at(p+32), localOffset = u32at(p+42);
+    var name = "";
+    for(var k=0;k<nameLen;k++) name += String.fromCharCode(bytes[p+46+k]);
+    if(u32at(localOffset) !== 0x04034b50){ errors.push("bad local header for "+name); }
+    var lNameLen = u16at(localOffset+26), lExtraLen = u16at(localOffset+28);
+    var dataStart = localOffset+30+lNameLen+lExtraLen;
+    var data = bytes.slice(dataStart, dataStart+compSize);
+    if(crc32(data) !== crc){ errors.push("crc32 mismatch for "+name); }
+    p += 46 + nameLen + extraLen + commentLen;
+    seen++;
+  }
+  if(seen !== count) errors.push("central directory entry count mismatch: expected "+count+", read "+seen);
+  return errors;
+}
+function buildXlsxBytes(f){
+  var s1 = sheetXml(buildRows(f));
+  var s2 = sheetXml(candidateRows(f));
+  var contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+    + '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+    + '<Default Extension="xml" ContentType="application/xml"/>'
+    + '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+    + '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+    + '<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+    + '</Types>';
+  var rootRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+    + '</Relationships>';
+  var workbook = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    + '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+    + 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'
+    + '<sheet name="Deal vs Workbook" sheetId="1" r:id="rId1"/>'
+    + '<sheet name="Candidate Pay Package" sheetId="2" r:id="rId2"/>'
+    + '</sheets></workbook>';
+  var wbRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+    + '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>'
+    + '</Relationships>';
+  return zipStore([
+    {name:"[Content_Types].xml", bytes:utf8(contentTypes)},
+    {name:"_rels/.rels", bytes:utf8(rootRels)},
+    {name:"xl/workbook.xml", bytes:utf8(workbook)},
+    {name:"xl/_rels/workbook.xml.rels", bytes:utf8(wbRels)},
+    {name:"xl/worksheets/sheet1.xml", bytes:utf8(s1)},
+    {name:"xl/worksheets/sheet2.xml", bytes:utf8(s2)}
+  ]);
+}
+
+/* --------------------- offline record parser --------------------- */
+function normDate(s){
+  if(!s) return "";
+  var m = String(s).match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m) return m[1]+"-"+("0"+m[2]).slice(-2)+"-"+("0"+m[3]).slice(-2);
+  m = String(s).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  if(m){
+    var y = m[3].length === 2 ? "20"+m[3] : m[3];
+    return y+"-"+("0"+m[1]).slice(-2)+"-"+("0"+m[2]).slice(-2);
+  }
+  return "";
+}
+/* Labels that commonly sit right after a city/facility name on the
+   same line in a Salesforce paste (no newline between fields). The
+   capture below stops at the first of these instead of swallowing
+   the next field's label, e.g. "City: Springfield State: IL" no
+   longer parses city as "Springfield State". */
+var FIELD_STOP = "State|Zip|Postal|City|Facility|Client|Account|Discipline|Start|End|Bill|Rate|Unit|Department|Shift|Fee";
+var PATTERNS = [
+  ["billRate", /bill\s*rate[^0-9\-]{0,25}(\d[\d,]*\.?\d*)/i, "n"],
+  ["feePct", /(?:client\s*fee|vms\s*fee|fee\s*(?:%|percent))[^0-9\-]{0,25}(\d[\d,]*\.?\d*)/i, "n"],
+  ["otBillRate", /(?:ot|overtime)\s*bill\s*rate[^0-9\-]{0,25}(\d[\d,]*\.?\d*)/i, "n"],
+  ["holidayBillRate", /holiday\s*bill\s*rate[^0-9\-]{0,25}(\d[\d,]*\.?\d*)/i, "n"],
+  ["guaranteedHours", /guarantee(?:d)?\s*hours[^0-9\-]{0,25}(\d[\d,]*\.?\d*)/i, "n"],
+  ["hoursPerWeek", /hours\s*per\s*week|weekly\s*hours/i, "skip"],
+  ["daysPerWeek", /days\s*per\s*week[^0-9\-]{0,25}(\d+)/i, "n"],
+  ["hoursPerDay", /hours\s*per\s*day[^0-9\-]{0,25}(\d[\d,]*\.?\d*)/i, "n"],
+  ["weeks", /(?:duration|assignment\s*length|weeks)[^0-9\-]{0,25}(\d{1,2})\s*(?:weeks?)?/i, "n"],
+  ["rtoDays", /(?:rto|requested\s*time\s*off)[^0-9\-]{0,25}(\d+)/i, "n"],
+  ["oriHours", /orientation\s*hours[^0-9\-]{0,25}(\d[\d,]*\.?\d*)/i, "n"],
+  ["startDate", /start\s*date[^0-9]{0,25}([\d\/\-]{6,10})/i, "d"],
+  ["endDate", /end\s*date[^0-9]{0,25}([\d\/\-]{6,10})/i, "d"],
+  ["zip", /(?:zip|postal)[^0-9]{0,15}(\d{5})/i, "s"],
+  ["state", /[Ss][Tt][Aa][Tt][Ee][^A-Za-z]{0,15}([A-Z]{2})\b/, "s"],
+  ["city", new RegExp("city[^A-Za-z0-9]{0,15}([A-Za-z0-9 .,'\\-]{2,40}?)(?=\\s+(?:"+FIELD_STOP+")\\b|[:\\n]|$)", "i"), "s"],
+  ["facility", new RegExp("(?:facility|client|account)\\s*(?:name)?[^A-Za-z0-9]{0,15}([A-Za-z0-9 .,'&\\-]{3,60}?)(?=\\s+(?:"+FIELD_STOP+")\\b|[:\\n]|$)", "i"), "s"]
+];
+var DISCIPLINES = [
+  [/\bphysical\s*therapist\s*assistant\b|\bPTA\b/i, "Physical Therapist Assistant"],
+  [/\bcertified\s*occupational\s*therapy\s*assistant\b|\bCOTA\b|\bOTA\b/i, "Certified Occupational Therapy Assistant"],
+  [/\bspeech[\s\-]*language\s*pathologist\b|\bSLP\b/i, "Speech Language Pathologist"],
+  [/\boccupational\s*therapist\b|\bOTR?\b/i, "Occupational Therapist"],
+  [/\bphysical\s*therapist\b|\bPT\b/i, "Physical Therapist"]
+];
+function parseRecord(text){
+  var found = {}, i, m;
+  for(i=0;i<PATTERNS.length;i++){
+    var p = PATTERNS[i];
+    if(p[2] === "skip") continue;
+    m = text.match(p[1]);
+    if(m && m[1]){
+      var v = String(m[1]).trim();
+      if(p[2] === "n") v = String(num(v));
+      if(p[2] === "d") v = normDate(v);
+      if(v !== "" && v !== "0") found[p[0]] = v;
+    }
+  }
+  /* hours per week, converted to days and hours per day when given directly */
+  m = text.match(/(?:hours\s*per\s*week|weekly\s*hours)[^0-9\-]{0,25}(\d[\d,]*\.?\d*)/i);
+  if(m){
+    var hpw = num(m[1]);
+    if(hpw > 0 && !found.hoursPerDay){
+      var d = found.daysPerWeek ? num(found.daysPerWeek) : 5;
+      found.daysPerWeek = String(d);
+      found.hoursPerDay = String(Math.round((hpw/d)*100)/100);
+    }
+  }
+  for(i=0;i<DISCIPLINES.length;i++){
+    if(DISCIPLINES[i][0].test(text)){ found.discipline = DISCIPLINES[i][1]; break; }
+  }
+  if(!found.zip){ m = text.match(/\b(\d{5})(?:-\d{4})?\b/); if(m) found.zip = m[1]; }
+  return found;
+}
+
+/* ---------------------------- form schema ------------------------ */
+var SCHEMA = [
+  {title:"Candidate", fields:[
+    {k:"candidateFirst", l:"First name"},
+    {k:"candidateLast", l:"Last name"},
+    {k:"preferredName", l:"Preferred name", h:"optional"},
+    {k:"discipline", l:"Discipline", ph:"Physical Therapist"}
+  ]},
+  {title:"Assignment", fields:[
+    {k:"facility", l:"Facility", wide:true},
+    {k:"city", l:"City"},
+    {k:"state", l:"State"},
+    {k:"zip", l:"Zip", h:"drives GSA lookup"},
+    {k:"guaranteedHours", l:"Guaranteed hours", h:"drives the guaranteed-hours pay line, not GM"},
+    {k:"startDate", l:"Start date", type:"date"},
+    {k:"endDate", l:"End date", type:"date"},
+    {k:"weeks", l:"Weeks", h:"auto from dates until edited"},
+    {k:"daysPerWeek", l:"Days / week"},
+    {k:"hoursPerDay", l:"Hours / day"},
+    {k:"rtoDays", l:"RTO days", h:"unpaid days off"},
+    {k:"notes", l:"Notes", type:"textarea", wide:true, h:"internal only, not on candidate view"}
+  ]},
+  {title:"Bill and fee", note:"Confirm the bill rate against Vivian before you quote anything off it.", fields:[
+    {k:"billRate", l:"Bill rate $/hr"},
+    {k:"feePct", l:"Client fee %", h:"e.g. 6"},
+    {k:"otBillRate", l:"OT bill rate $/hr", h:"computes OT GM $/hr below"},
+    {k:"holidayBillRate", l:"Holiday bill rate $/hr", h:"computes holiday GM $/hr below"}
+  ]},
+  {title:"Pay", note:"Pull the two GSA daily figures from gsa.gov by zip, then move the stipend if you need margin.", fields:[
+    {k:"taxable", l:"Taxable rate $/hr"},
+    {k:"otPayOverride", l:"OT pay override $/hr", h:"1.5× default"},
+    {k:"holidayPayOverride", l:"Holiday pay override $/hr", h:"1.5× default"},
+    {k:"gsaLodging", l:"GSA daily lodging $"},
+    {k:"gsaMIE", l:"GSA daily M&IE $"}
+  ]},
+  {stipend:true},
+  {title:"Standard costs", fields:[
+    {k:"insurance", l:"Insurance opt-in", h:"$250/mo", toggle:["No","Yes"]},
+    {k:"travelReimb", l:"Travel reimbursement $"},
+    {k:"compliance", l:"Compliance $", h:"default 300"},
+    {k:"licenseReimb", l:"License reimbursement $"},
+    {k:"ceu", l:"CEU $", h:"default 97"},
+    {k:"bonus", l:"Bonus $", h:"18% burden"},
+    {k:"otherBonus1", l:"Other bonus 1 $"},
+    {k:"otherBonus2", l:"Other bonus 2 $"},
+    {k:"otherReimb1", l:"Other reimb 1 $", h:"no burden"},
+    {k:"otherReimb2", l:"Other reimb 2 $", h:"no burden"}
+  ]},
+  {title:"Mileage and orientation", fields:[
+    {k:"miles", l:"Miles"},
+    {k:"ratePerMile", l:"Rate per mile $", h:"IRS cap ~0.72"},
+    {k:"mileageBillable", l:"Mileage billable", toggle:["No","Yes"]},
+    {k:"billPerMile", l:"Bill per mile $"},
+    {k:"oriBillable", l:"Orientation billable", toggle:["No","Yes"]},
+    {k:"oriHours", l:"Orientation hours"},
+    {k:"oriBillRate", l:"Orientation bill rate $/hr"},
+    {k:"oriPayRate", l:"Orientation pay rate $/hr"}
+  ]}
+];
+
+/* ============================ UI ================================= */
+function boot(){
+  var f = Object.assign({}, BLANK);
+  var parsed = {};
+  var view = "deal";
+  var deals = [];
+  var weeksTouched = false;
+  var $ = function(id){ return document.getElementById(id); };
+
+  try {
+    var stored = localStorage.getItem("deal-sheet-history");
+    deals = stored ? JSON.parse(stored) : [];
+  } catch(e){ deals = []; }
+
+  function setStatus(text, tone){
+    var el = $("status");
+    if(!text){ el.className = "hide"; el.innerHTML = ""; return; }
+    el.className = "status " + (tone || "ok");
+    el.innerHTML = "<span>"+esc(text)+"</span><button id='stX'>&times;</button>";
+    $("stX").onclick = function(){ setStatus(null); };
+  }
+
+  /* ---- build the form once, then only update the snapshot ---- */
+  function fieldHtml(fd){
+    var flag = parsed[fd.k] ? " flag" : "";
+    var hint = fd.h ? "<em>"+esc(fd.h)+"</em>" : "";
+    if(fd.toggle){
+      var btns = fd.toggle.map(function(o){
+        return "<button data-tog='"+fd.k+"' data-val='"+o+"' class='"+(f[fd.k]===o?"on":"")+"'>"+o+"</button>";
+      }).join("");
+      return "<div class='fld"+(fd.wide?" wide":"")+"'><div class='lbl'><span id='lbl_"+fd.k+"'>"+esc(fd.l)+"</span>"+hint+
+        "</div><div class='tog' id='tog_"+fd.k+"' role='group' aria-labelledby='lbl_"+fd.k+"'>"+btns+"</div></div>";
+    }
+    if(fd.type === "textarea"){
+      return "<div class='fld"+(fd.wide?" wide":"")+"'><div class='lbl'><label for='in_"+fd.k+"'>"+esc(fd.l)+"</label>"+hint+
+        "</div><textarea id='in_"+fd.k+"' rows='2' class='"+flag+"' placeholder='"+esc(fd.ph||"")+"'>"+esc(f[fd.k]||"")+"</textarea></div>";
+    }
+    return "<div class='fld"+(fd.wide?" wide":"")+"'><div class='lbl'><label for='in_"+fd.k+"'>"+esc(fd.l)+"</label>"+hint+
+      "</div><input id='in_"+fd.k+"' class='"+flag+"' type='"+(fd.type||"text")+
+      "' value='"+esc(f[fd.k]||"")+"' placeholder='"+esc(fd.ph||"")+"'></div>";
+  }
+  /* The range input's own drag gesture (pointer capture) breaks if
+     the <input> node is replaced mid-drag. stipendHtml() below gives
+     the pieces that change on every drag tick their own ids so
+     updateStipendDisplay() can patch text/styles in place without
+     ever touching the <input> or its container — only structural
+     changes (GSA figures, schedule) go through the full renderStipend()
+     rebuild, which only ever runs between drags, not during one. */
+  function stipendHtml(){
+    var c = calc(f);
+    var weeklyMax = c.gsaDaily*7;
+    var stipWeek = c.stipendHr*c.hoursPerWeek;
+    var pctMax = weeklyMax > 0 ? Math.round((stipWeek/weeklyMax)*100) : 0;
+    return "<div class='box' id='stipBox' style='"+(c.overGSA?"border-color:var(--red);background:var(--redSoft)":"")+"'>"
+      + "<div style='display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px'>"
+      + "<span style='font-size:13.5px'>Stipend</span><span style='font-size:12px;color:var(--muted)'>GSA max "
+      + (c.gsaMaxHr>0 ? money2(c.gsaMaxHr)+"/hr · "+money0(weeklyMax)+"/wk" : "enter GSA rates") + "</span></div>"
+      + "<div style='display:flex;align-items:baseline;gap:10px;margin-bottom:8px'>"
+      + "<span id='stipValueDisplay' style='font-family:Georgia,serif;font-size:26px;font-variant-numeric:tabular-nums'>"
+      + ((c.gsaMaxHr>0||has(f.stipendOverride)) ? money2(c.stipendHr) : "—") + "</span>"
+      + "<span id='stipSubDisplay' style='font-size:12.5px;color:var(--muted)'>per hour · "+money0(stipWeek)+"/wk · "+pctMax+"% of GSA max</span></div>"
+      + "<input type='range' id='stipRange' min='0' max='"+Math.max(0.01,c.gsaMaxHr)+"' step='0.25' value='"
+      + Math.min(c.stipendHr, Math.max(0.01,c.gsaMaxHr)) + "'"+(c.gsaMaxHr<=0?" disabled":"")+">"
+      + "<div class='row' style='margin-top:10px;align-items:center'>"
+      + "<button class='btn' id='stipReset'>Reset to GSA max</button>"
+      + "<input id='in_stipendOverride' style='flex:1;margin-top:0' value='"+esc(f.stipendOverride)+"' placeholder='type an exact $/hr'></div>"
+      + "<div id='stipWarn' style='font-size:12.5px;color:var(--red);margin-top:8px'"
+      + (c.overGSA ? "" : " hidden") + ">Above the GSA maximum for this zip. Bring it down.</div>"
+      + "</div>";
+  }
+  /* Live-updates the stipend box during a slider drag or manual-field
+     edit without rebuilding any DOM node (see note above stipendHtml). */
+  function updateStipendDisplay(){
+    var c = calc(f);
+    var weeklyMax = c.gsaDaily*7;
+    var stipWeek = c.stipendHr*c.hoursPerWeek;
+    var pctMax = weeklyMax > 0 ? Math.round((stipWeek/weeklyMax)*100) : 0;
+    var valEl = $("stipValueDisplay");
+    if(valEl) valEl.textContent = (c.gsaMaxHr>0||has(f.stipendOverride)) ? money2(c.stipendHr) : "—";
+    var subEl = $("stipSubDisplay");
+    if(subEl) subEl.textContent = "per hour · "+money0(stipWeek)+"/wk · "+pctMax+"% of GSA max";
+    var box = $("stipBox");
+    if(box){
+      box.style.borderColor = c.overGSA ? "var(--red)" : "";
+      box.style.background = c.overGSA ? "var(--redSoft)" : "";
+    }
+    var warn = $("stipWarn");
+    if(warn) warn.hidden = !c.overGSA;
+  }
+  function renderForm(){
+    var html = "";
+    SCHEMA.forEach(function(sec){
+      if(sec.stipend){ html += stipendHtml(); return; }
+      html += "<section class='blk'><div class='blkhead'><h3>"+esc(sec.title)+"</h3>"
+        + (sec.note ? "<div class='blknote'>"+esc(sec.note)+"</div>" : "") + "</div><div class='fields'>";
+      sec.fields.forEach(function(fd){ html += fieldHtml(fd); });
+      html += "</div></section>";
+    });
+    $("formHost").innerHTML = html;
+    wireForm();
+  }
+  function renderStipend(){
+    var box = document.querySelector("#stipBox");
+    if(!box) return;
+    var tmp = document.createElement("div");
+    tmp.innerHTML = stipendHtml();
+    box.parentNode.replaceChild(tmp.firstChild, box);
+    wireStipend();
+  }
+  function wireStipend(){
+    var r = $("stipRange");
+    if(r) r.oninput = function(){
+      f.stipendOverride = r.value;
+      updateStipendDisplay();
+      renderSnapshot();
+    };
+    var rs = $("stipReset");
+    if(rs) rs.onclick = function(){ f.stipendOverride = ""; renderStipend(); renderSnapshot(); };
+    var so = $("in_stipendOverride");
+    if(so) so.oninput = function(){
+      f.stipendOverride = so.value;
+      var range = $("stipRange");
+      if(range){
+        var maxAttr = Math.max(0.01, calc(f).gsaMaxHr);
+        range.max = maxAttr;
+        range.value = Math.min(num(so.value, maxAttr), maxAttr);
+      }
+      updateStipendDisplay();
+      renderSnapshot();
+    };
+  }
+  function wireForm(){
+    SCHEMA.forEach(function(sec){
+      if(sec.stipend) return;
+      sec.fields.forEach(function(fd){
+        if(fd.toggle){
+          var host = $("tog_"+fd.k);
+          if(!host) return;
+          Array.prototype.forEach.call(host.children, function(b){
+            b.onclick = function(){
+              f[fd.k] = b.getAttribute("data-val");
+              Array.prototype.forEach.call(host.children, function(x){ x.className = ""; });
+              b.className = "on";
+              renderSnapshot();
+            };
+          });
+        } else {
+          var el = $("in_"+fd.k);
+          if(!el) return;
+          el.oninput = function(){
+            f[fd.k] = el.value;
+            if(fd.k === "weeks") weeksTouched = true;
+            if(fd.k === "startDate" || fd.k === "endDate") autoWeeks();
+            if(fd.k === "gsaLodging" || fd.k === "gsaMIE" || fd.k === "daysPerWeek" || fd.k === "hoursPerDay") renderStipend();
+            renderSnapshot();
+          };
+        }
+      });
+    });
+    wireStipend();
+  }
+  function autoWeeks(){
+    if(weeksTouched) return;
+    if(f.startDate && f.endDate){
+      var a = new Date(f.startDate), b = new Date(f.endDate);
+      if(!isNaN(a.getTime()) && !isNaN(b.getTime()) && b > a){
+        var w = Math.max(1, Math.round((b - a)/(7*864e5)));
+        f.weeks = String(w);
+        var el = $("in_weeks");
+        if(el) el.value = f.weeks;
+      }
+    }
+  }
+
+  /* ------------------------- snapshot ------------------------- */
+  function marginBadges(gmPct, gmHr){
+    var flag = marginFlag(gmPct, gmHr);
+    var pctColor = flag.pctOk ? "var(--good)" : "var(--red)";
+    var hrColor = flag.hrOk ? "var(--good)" : "var(--red)";
+    var pctBg = flag.pctOk ? "var(--goodSoft)" : "var(--redSoft)";
+    var hrBg = flag.hrOk ? "var(--goodSoft)" : "var(--redSoft)";
+    var strongBanner = flag.strong
+      ? "<div style='background:var(--goldSoft);border:1px solid var(--gold);color:var(--gold);"
+        + "padding:8px 12px;border-radius:3px;font-size:12.5px;margin-bottom:14px'>Both targets met. Strong deal.</div>"
+      : "";
+    return strongBanner
+      + "<div style='display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px'>"
+      + "<div style='padding:12px 14px;border-radius:3px;background:"+pctBg+"'>"
+      + "<div style='font-size:11.5px;color:"+pctColor+"'>GM % · target "+pct1(SETTINGS.minGMPct)+"</div>"
+      + "<div style='font-family:Georgia,serif;font-size:26px;color:"+pctColor+"'>"+pct1(gmPct)+"</div></div>"
+      + "<div style='padding:12px 14px;border-radius:3px;background:"+hrBg+"'>"
+      + "<div style='font-size:11.5px;color:"+hrColor+"'>GM $/hr · target "+money0(SETTINGS.minGMHr)+"</div>"
+      + "<div style='font-family:Georgia,serif;font-size:26px;color:"+hrColor+"'>"+money2(gmHr)+"</div></div>"
+      + "</div>";
+  }
+  function stat(k, v, s, size, color){
+    return "<div class='stat'><div class='k'>"+k+"</div><div class='v' style='font-size:"+(size||30)+"px;color:"
+      + (color||"var(--ink)") + "'>"+v+"</div>" + (s ? "<div class='s'>"+s+"</div>" : "") + "</div>";
+  }
+  function renderSnapshot(){
+    var c = calc(f);
+    if(!c.live){
+      $("snapshot").innerHTML = "<div style='font-size:13.5px;color:var(--muted);line-height:1.5'>"
+        + "Enter a bill rate to start. Everything below stays blank until then, same as the workbook.</div>";
+      return;
+    }
+    var warns = computeWarnings(c, f);
+    var warnHtml = warns.length
+      ? "<div class='status warn' style='display:block;margin-bottom:16px'>"+warns.map(esc).join("<br>")+"</div>"
+      : "";
+    var rows = [
+      ["Hours / week", String(c.hoursPerWeek)],
+      ["Total hours", String(Math.round(c.totalHours))],
+      ["Revenue / week", money0(c.revenueWeek)],
+      ["Revenue / assignment", money0(c.revenueTotal)],
+      ["Total GM, assignment", money0(c.totalGM)],
+      ["Total costs", money0(c.totalCosts)],
+      ["Mileage GM", money0(c.mileageGM)],
+      ["Orientation GM", money0(c.oriGM)],
+      ["RTO hours", String(Math.round(c.rtoHours))],
+      ["GM after RTO", money0(c.rtoGM)],
+      ["Weekly gross to hit "+pct1(SETTINGS.minGMPct)+" GM", money0(c.roomAt(SETTINGS.minGMPct,"gross"))+"/wk"]
+    ];
+    if(isFinite(c.otGmHr)) rows.push(["OT GM $/hr", money2(c.otGmHr)]);
+    if(isFinite(c.holidayGmHr)) rows.push(["Holiday GM $/hr", money2(c.holidayGmHr)]);
+    if(Math.round(c.guaranteedHours) !== Math.round(c.hoursPerWeek)){
+      rows.push(["Gross at guaranteed "+c.guaranteedHours+" hrs", money0(c.weeklyGrossAtGuarantee)]);
+      rows.push(["Take-home at guaranteed "+c.guaranteedHours+" hrs", money0(c.weeklyTakeHomeAtGuarantee)]);
+    }
+    var rowsHtml = rows.map(function(r){ return "<tr class='line'><td class='k'>"+r[0]+"</td><td class='v'>"+r[1]+"</td></tr>"; }).join("");
+
+    $("snapshot").innerHTML = warnHtml + marginBadges(c.gmPct, c.gmHr)
+      + "<div style='display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px'>"
+      + stat("Net GM after costs", pct1(c.netGMPct), "assignment total, after all costs", 30)
+      + stat("Net margin, assignment", money0(c.netMargin), money0(c.netWeekly)+"/wk", 30)
+      + "</div>"
+      + "<div style='border-top:1px solid var(--ink);padding-top:14px;margin-bottom:18px'>"
+      + "<div style='display:grid;grid-template-columns:1fr 1fr;gap:18px'>"
+      + stat("Est. weekly gross ("+c.hoursPerWeek+" hrs)", money0(c.weeklyGross), money2(c.grossHr)+"/hr blended", 26)
+      + stat("Est. weekly take-home ("+c.hoursPerWeek+" hrs)", money0(c.weeklyTakeHome), Math.round(c.taxRate*100)+"% assumed tax", 26, "var(--good)")
+      + "</div></div>"
+      + "<table>"+rowsHtml+"</table>";
+  }
+
+  /* ------------------------ candidate view ------------------------ */
+  function renderCandidate(){
+    var c = calc(f);
+    var display = f.preferredName || f.candidateFirst || "the candidate";
+    var place = [f.facility, f.city, f.state].filter(function(x){return x;}).join(", ") || "—";
+    /* Show the guaranteed-hours figures as a second pair only when the
+       guarantee actually differs from the regular schedule — otherwise
+       it's just the same two numbers twice. */
+    var showGuarantee = c.live && Math.round(c.guaranteedHours) !== Math.round(c.hoursPerWeek);
+    var rows = [
+      ["Facility", place],
+      ["Start date", f.startDate || "—"],
+      ["Assignment length", c.weeks+" weeks"],
+      ["Regular schedule", String(c.hoursPerWeek)+" hrs/week"],
+      ["Guaranteed hours", f.guaranteedHours || "—"],
+      ["Taxable hourly rate", c.live ? money2(c.taxable) : "—"],
+      ["Tax-free per diem hourly", c.live ? money2(c.stipendHr) : "—"]
+    ].map(function(r){
+      return "<tr class='line'><td style='color:var(--muted);font-size:14px;padding:9px 0'>"+esc(r[0])
+        + "</td><td style='text-align:right;font-size:14px;padding:9px 0;font-variant-numeric:tabular-nums'>"+esc(r[1])+"</td></tr>";
+    }).join("");
+
+    var payBlocks = "<div style='display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:"+(showGuarantee?"10":"26")+"px'>"
+      + stat("Gross at regular schedule", c.live ? money0(c.weeklyGross) : "—", c.live ? c.hoursPerWeek+" hrs/week" : "", 34)
+      + stat("Take-home at regular schedule", c.live ? money0(c.weeklyTakeHome) : "—", c.live ? c.hoursPerWeek+" hrs/week" : "", 34, "var(--good)")
+      + "</div>";
+    if(showGuarantee){
+      payBlocks += "<div style='display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:26px;"
+        + "padding-top:14px;border-top:1px solid var(--ruleSoft)'>"
+        + stat("Gross at guaranteed hours", money0(c.weeklyGrossAtGuarantee), c.guaranteedHours+" hrs/week", 26)
+        + stat("Take-home at guaranteed hours", money0(c.weeklyTakeHomeAtGuarantee), c.guaranteedHours+" hrs/week", 26, "var(--good)")
+        + "</div>";
+    }
+
+    $("viewCand").innerHTML = "<div class='panel card'>"
+      + "<h2>Estimated pay package</h2>"
+      + "<div style='font-size:13.5px;color:var(--muted);margin-top:4px;margin-bottom:24px'>"
+      + esc(display) + (f.discipline ? " · "+esc(f.discipline) : "") + "</div>"
+      + payBlocks
+      + "<table>"+rows+"</table>"
+      + "<p style='font-size:12px;color:var(--muted);line-height:1.5;margin-top:20px;margin-bottom:0'>"
+      + "All figures are estimates and may change based on final schedule, taxes, tax home verification, "
+      + "and assignment terms. Per diem eligibility requires a qualifying tax home and a completed "
+      + "representation form.</p></div>"
+      + "<div class='row' style='margin-top:14px;align-items:center'>"
+      + "<button class='btn primary' id='candCopy'>Copy as text</button>"
+      + "<button class='btn' id='candDl'>Download file</button>"
+      + "<span style='font-size:12px;color:var(--muted)'>No bill rate or margin appears on this screen.</span></div>";
+
+    $("candCopy").onclick = function(){
+      var t = "Estimated pay package for "+display+"\n"+place+"\n"
+        + (f.discipline||"")+" | "+c.weeks+" weeks | "+c.hoursPerWeek+" hrs/week regular schedule"
+        + (showGuarantee ? " | "+c.guaranteedHours+" hrs/week guaranteed" : "")
+        + (f.startDate ? " | starts "+f.startDate : "")+"\n\n"
+        + "Taxable hourly: "+money2(c.taxable)+"\n"
+        + "Tax-free per diem hourly: "+money2(c.stipendHr)+"\n"
+        + "Estimated weekly gross at "+c.hoursPerWeek+" hrs: "+money0(c.weeklyGross)+"\n"
+        + "Estimated weekly take-home at "+c.hoursPerWeek+" hrs: "+money0(c.weeklyTakeHome)+"\n"
+        + (showGuarantee
+            ? "Estimated weekly gross at guaranteed "+c.guaranteedHours+" hrs: "+money0(c.weeklyGrossAtGuarantee)+"\n"
+              + "Estimated weekly take-home at guaranteed "+c.guaranteedHours+" hrs: "+money0(c.weeklyTakeHomeAtGuarantee)+"\n"
+            : "")
+        + "\nAll figures are estimates and may change based on final schedule, taxes, tax home verification, and assignment terms.";
+      copyText(t, "Copied the candidate summary.");
+    };
+    $("candDl").onclick = downloadDeal;
+  }
+
+  /* --------------------------- history --------------------------- */
+  function renderHistory(){
+    var header = "<div class='row' style='justify-content:space-between;align-items:center;margin-bottom:14px'>"
+      + "<div style='font-size:11.5px;color:var(--muted)'>Saved in this browser only. Clearing browser data, "
+      + "or opening this file on a different computer, will not show these.</div>"
+      + (deals.length ? "<button class='btn' id='histClearAll' style='padding:6px 12px;font-size:12.5px'>Clear all</button>" : "")
+      + "</div>";
+    if(!deals.length){
+      $("viewHist").innerHTML = header + "<div style='color:var(--muted);font-size:14px'>"
+        + "No saved deals yet. Build one on the Deal tab and press Save to History.</div>";
+      return;
+    }
+    $("viewHist").innerHTML = header + deals.map(function(d, i){
+      return "<div class='histrow'><div><div style='font-size:15px'>"+esc(d.name)+"</div>"
+        + "<div style='font-size:12px;color:var(--muted)'>"
+        + esc([d.discipline, d.facility].filter(function(x){return x;}).join(" · ") || "No facility")
+        + " · " + new Date(d.savedAt).toLocaleDateString() + "</div></div>"
+        + "<div style='display:flex;gap:18px;align-items:center'>"
+        + "<div style='text-align:right;font-variant-numeric:tabular-nums'>"
+        + "<div style='font-size:14px'>"+money0(d.weeklyGross)+"/wk</div>"
+        + "<div style='font-size:12px;color:"+tierOf(d.net).color+"'>net "+pct1(d.net)+"</div></div>"
+        + "<button class='btn' data-open='"+i+"' style='padding:6px 12px;font-size:12.5px'>Open</button>"
+        + "<button class='btn' data-del='"+i+"' style='padding:6px 10px;font-size:12.5px;border:none;background:transparent;color:var(--muted)'>Delete</button>"
+        + "</div></div>";
+    }).join("");
+    Array.prototype.forEach.call($("viewHist").querySelectorAll("[data-open]"), function(b){
+      b.onclick = function(){
+        f = Object.assign({}, BLANK, deals[parseInt(b.getAttribute("data-open"),10)].fields);
+        parsed = {};
+        weeksTouched = true;
+        setView("deal"); renderForm(); renderSnapshot();
+      };
+    });
+    Array.prototype.forEach.call($("viewHist").querySelectorAll("[data-del]"), function(b){
+      b.onclick = function(){
+        deals.splice(parseInt(b.getAttribute("data-del"),10), 1);
+        persist(); renderHistory();
+      };
+    });
+    var clearAll = $("histClearAll");
+    if(clearAll) clearAll.onclick = function(){
+      if(!window.confirm("Delete all saved deals from this browser? This cannot be undone.")) return;
+      deals = [];
+      persist(); renderHistory();
+    };
+  }
+  function persist(){
+    try { localStorage.setItem("deal-sheet-history", JSON.stringify(deals)); return true; }
+    catch(e){ return false; }
+  }
+
+  /* --------------------------- actions --------------------------- */
+  function copyText(text, okMsg){
+    function report(ok){
+      setStatus(ok ? okMsg : "Could not copy automatically. The text is selected, press Ctrl+C.", ok ? "ok" : "warn");
+    }
+    function fallback(){
+      var buf = $("buffer");
+      buf.value = text;
+      buf.select();
+      var done = false;
+      try { done = document.execCommand("copy"); } catch(e){ done = false; }
+      report(done);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ report(true); }, fallback);
+    } else {
+      fallback();
+    }
+  }
+  function downloadDeal(){
+    var c = calc(f);
+    if(!c.live){ setStatus("Enter a bill rate first. There is nothing to compare yet.", "warn"); return; }
+    try {
+      var bytes = buildXlsxBytes(f);
+      var blob = new Blob([bytes], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+      var name = (((f.candidateFirst||"")+" "+(f.candidateLast||"")).trim() || "deal").replace(/[^a-z0-9]+/gi,"-").toLowerCase();
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "deal-sheet-"+name+"-"+new Date().toISOString().slice(0,10)+".xlsx";
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      setStatus("Downloaded. Open it next to the Mastersheet and check the cell references.", "ok");
+    } catch(e){
+      setStatus("Download did not start. Use Copy figures instead and paste into a blank sheet.", "warn");
+    }
+  }
+  function saveDeal(){
+    var c = calc(f);
+    var name = ((f.candidateFirst||"")+" "+(f.candidateLast||"")).trim() || "Unnamed";
+    deals.unshift({name:name, facility:f.facility, discipline:f.discipline,
+      gm:c.gmPct, net:c.netGMPct, weeklyGross:c.weeklyGross,
+      savedAt:new Date().toISOString(), fields:Object.assign({}, f)});
+    deals = deals.slice(0, 40);
+    var ok = persist();
+    setStatus(ok ? "Saved "+name+". It will still be here next time you open this file."
+                 : name+" is in History for this session only. Browser storage is blocked, so download the file if you need to keep it.",
+              ok ? "ok" : "warn");
+    renderHistory();
+  }
+
+  /* ---------------------------- views ---------------------------- */
+  function setView(v){
+    view = v;
+    $("viewDeal").className = v === "deal" ? "" : "hide";
+    $("viewCand").className = v === "cand" ? "cand" : "hide cand";
+    $("viewHist").className = v === "hist" ? "panel hist" : "hide panel hist";
+    $("navDeal").className = v === "deal" ? "on" : "";
+    $("navCand").className = v === "cand" ? "on" : "";
+    $("navHist").className = v === "hist" ? "on" : "";
+    if(v === "cand") renderCandidate();
+    if(v === "hist") renderHistory();
+  }
+
+  /* ---------------------------- wiring --------------------------- */
+  $("navDeal").onclick = function(){ setView("deal"); };
+  $("navCand").onclick = function(){ setView("cand"); };
+  $("navHist").onclick = function(){ setView("hist"); };
+  $("dlBtn").onclick = downloadDeal;
+  $("saveBtn").onclick = saveDeal;
+  $("copyBtn").onclick = function(){
+    copyText(buildRows(f).map(function(r){ return r.join("\t"); }).join("\n"),
+      "Copied. Paste into a blank sheet, it is tab separated.");
+  };
+  $("clearBtn").onclick = function(){
+    f = Object.assign({}, BLANK); parsed = {}; weeksTouched = false;
+    $("raw").value = ""; $("parseOut").innerHTML = "";
+    setStatus(null); renderForm(); renderSnapshot();
+  };
+  $("impToggle").onclick = function(){
+    var b = $("impBody");
+    b.className = b.className === "hide" ? "" : "hide";
+  };
+  $("parseBtn").onclick = function(){
+    var text = $("raw").value;
+    if(!text.trim()) return;
+    parsed = parseRecord(text);
+    Object.keys(parsed).forEach(function(k){ if(k in f) f[k] = parsed[k]; });
+    if(parsed.weeks) weeksTouched = true;
+    autoWeeks();
+    renderForm(); renderSnapshot();
+    var keys = Object.keys(parsed);
+    $("parseOut").innerHTML = keys.length
+      ? "Filled: " + keys.join(", ") + ". Everything stays editable. Confirm the bill rate, city, and facility."
+      : "Nothing matched. Enter the fields by hand below.";
+  };
+
+  renderForm();
+  renderSnapshot();
+}
+
+
+/* ---------------------------- math self check --------------------- */
+(function selfTest(){
+  var t = {billRate:"75", feePct:"6", taxable:"32", daysPerWeek:"5", hoursPerDay:"8", weeks:"13",
+    gsaLodging:"110", gsaMIE:"64", stipendOverride:"", insurance:"No", compliance:"300", ceu:"97"};
+  var c = calc(t), fails = 0;
+  function near(a,b){ return Math.abs(a-b) < 0.005; }
+  if(!near(c.stipendHr,30.45)) fails++;
+  if(!near(c.gmHr,2.29)) fails++;
+  if(!near(c.gmPct,0.030533)) fails++;
+  if(!near(c.weeklyGross,2498)) fails++;
+  if(!near(c.weeklyTakeHome,2229.2)) fails++;
+  if(!near(c.totalCosts,397)) fails++;
+  if(!near(c.netMargin,793.8)) fails++;
+  if(!near(c.netGMPct,0.0203538)) fails++;
+  var w = c.roomAt(SETTINGS.minGMPct,"gross");
+  var t2 = JSON.parse(JSON.stringify(t));
+  t2.taxable = String(w/c.hoursPerWeek - c.stipendHr);
+  if(!near(calc(t2).gmPct,SETTINGS.minGMPct)) fails++;
+  /* Profitability B6/B7: OT/Holiday GM = Bill×(1-Fee%) - 1.5×(Taxable+Stipend) */
+  var t3 = Object.assign({}, t, {otBillRate:"80", holidayBillRate:"90"});
+  var c3 = calc(t3);
+  if(!near(c3.otGmHr,-18.475)) fails++;
+  if(!near(c3.holidayGmHr,-9.075)) fails++;
+  /* guaranteed-hours pay comparison, independent of GM/margin */
+  var t4 = Object.assign({}, t, {guaranteedHours:"36"});
+  var c4 = calc(t4);
+  if(!near(c4.weeklyGrossAtGuarantee,2248.2)) fails++;
+  if(!near(c4.weeklyTakeHomeAtGuarantee,2006.28)) fails++;
+  var zipErrors = verifyZip(buildXlsxBytes(Object.assign({}, BLANK, t, {candidateFirst:"Test", candidateLast:"Case"})));
+  if(zipErrors.length) fails++;
+  if(typeof document === "undefined") return;
+  var el = document.getElementById("selftest");
+  if(!el) return;
+  el.textContent = fails ? "  math check FAILED (" + fails + " of 14)" : "  math check passed, 14 of 14";
+  el.style.color = fails ? "var(--red)" : "var(--muted)";
+})();
+
+if(typeof document !== "undefined"){ document.addEventListener("DOMContentLoaded", boot); }
+if(typeof module !== "undefined"){ module.exports = {calc:calc, buildRows:buildRows, buildXlsxBytes:buildXlsxBytes, parseRecord:parseRecord, candidateRows:candidateRows, verifyZip:verifyZip}; }
+</script>
+</body>
+</html>
